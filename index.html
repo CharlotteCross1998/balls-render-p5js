@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Balls Render p5</title>
+	<meta name="description" content="Balls Render done in p5js">
+	<meta name="author" content="charlottecross1998">
+	<script src="https://cdn.jsdelivr.net/npm/p5@1.6.0/lib/p5.min.js"></script>
+	<script>
+		var width, height;
+		const MAX_DISTANCE 	= 100;
+		const MAX_BALLS 	= 50;
+
+		var balls = [];
+		class Ball
+		{
+			constructor(x, y)
+			{
+				this.positionX = x;
+				this.positionY = y;
+				this.velocityX = random(-1, 1); //Initial starting velocity
+				this.velocityY = random(-1, 1);
+				this.ballStrokeWeight = random(1.5, 5);
+			}
+			Render()
+			{
+				stroke(255);
+				strokeWeight(this.ballStrokeWeight);
+				point(this.positionX, this.positionY);
+			}
+			Update()
+			{
+				this.positionX += this.velocityX;
+				this.positionY += this.velocityY;
+				//Collision detection
+				if(this.positionX <= 0 || this.positionX >= width)  this.velocityX = -this.velocityX; //Reverse velocity
+				if(this.positionY <= 0 || this.positionY >= height) this.velocityY = -this.velocityY;
+				//Find closest and second closest ball
+				var closestBall, secondClosestBall, closestDist = 9999, secondClosestDist = 9999;
+				for(let ball of balls)
+				{
+					if(ball == this) continue; //don't check ourselves
+					let distance = dist(this.positionX, this.positionY, ball.positionX, ball.positionY);
+					if(distance < closestDist) { closestDist = distance; closestBall = ball; }
+					else if(distance < secondClosestDist) { secondClosestDist = distance; secondClosestBall = ball; }
+				}
+				//This is the maximum distance for 3 balls intersecting to create a triangle.
+        		//We check the second one because if the second one is close, the first one will be too.
+				if(secondClosestDist < MAX_DISTANCE) 
+				{
+					// stroke(0, 0, 0, 50); //Uncomment for semi-transparent triangles
+					strokeWeight(2);
+					fill(61, 61, 61);
+					triangle(this.positionX, this.positionY, closestBall.positionX, closestBall.positionY, secondClosestBall.positionX, secondClosestBall.positionY);
+				}
+			}
+		}
+			
+		function setup() 
+		{
+			width = Math.max(document.body.scrollWidth, document.documentElement.scrollWidth, document.body.offsetWidth, document.documentElement.offsetWidth, document.documentElement.clientWidth);
+			height = window.innerHeight; //make height the height of the window within the browser
+			var canvas = createCanvas(width, height);
+			canvas.parent('p5-canvas');
+			for(let i = 0; i < MAX_BALLS; ++i)
+			{
+				balls.push(new Ball(random(width), random(height)));    
+			}
+		}
+		function draw() 
+		{
+			background(20, 19, 33);
+			for(let ball of balls)
+			{
+				ball.Render();
+				ball.Update();
+			}
+		}
+	</script>
+</head>
+<body style="width: 100%; height:100%; margin: 0; padding: 0;">
+	<div id="p5-canvas"></div>
+</body>	
+</html>
